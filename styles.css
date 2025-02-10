@@ -1,0 +1,427 @@
+/* 移动到文件最前面 */
+:root {
+    /* 颜色变量 */
+    --primary-color: #3ca370;
+    --primary-hover: #348f61;
+    --primary-light: #f0f7f4;
+    --link-color: #1a73e8;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-light: #999999;
+    
+    /* 布局变量 */
+    --header-height: 80px;
+    --max-content-width: 800px;
+    --sidebar-width: 200px;
+    --memo-width: 620px;
+    --spacing-base: 20px;
+    --transition-speed: 0.2s;  /* 新增统一过渡时间变量 */
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    background: #fafafa;
+    min-height: 100vh;  /* 确保最小高度充满视口 */
+}
+
+/* 头部样式 */
+header {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid #efefef;
+    margin-bottom: var(--spacing-base);
+    z-index: 100;
+}
+
+/* 新增头部容器样式 */
+.header-container {
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding: 0 var(--spacing-base);
+}
+
+/* 顶部信息区域 */
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-base) 0;
+}
+
+.header-top .title {
+    font-size: 20px;
+    color: var(--text-primary);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.user {
+    text-align: right;
+}
+
+.user .name {
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.user .date {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+/* 操作区域 */
+.header-actions {
+    padding: var(--spacing-base) 0 calc(var(--spacing-base) - 8px);
+}
+
+.actions-wrapper {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;  /* 改为左对齐 */
+}
+
+/* 统一的按钮样式 */
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f5f5f5;
+    color: var(--text-primary);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all var(--transition-speed) ease;
+}
+
+.action-button:hover {
+    background: #ebebeb;
+}
+
+.action-button svg {
+    transition: transform var(--transition-speed) ease;
+}
+
+/* 刷新按钮特殊状态 */
+.action-button.loading svg {
+    animation: spin 1s linear infinite;
+}
+
+/* 左侧区域 */
+.header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 右侧区域 */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* 导航链接样式 */
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color var(--transition-speed) ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+}
+
+.nav-link svg {
+    transition: transform var(--transition-speed) ease;
+}
+
+.nav-link:hover svg {
+    transform: translateX(2px);
+}
+
+/* 修改顶部信息区域样式 */
+header .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-base) 0;
+}
+
+header .top .user {
+    padding: 10px 0;
+}
+
+header .top .user .name {
+    color: #454545;
+    font-size: 16px;
+}
+
+header .top .user .date {
+    font-size: 12px;
+    color: #9d9d9d;
+    margin-top: 4px;
+}
+
+/* 布局样式 */
+.layout {
+    display: flex;
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding: 0 var(--spacing-base) var(--spacing-base);
+    gap: var(--spacing-base);
+    min-height: calc(100vh - var(--header-height));  /* 确保最小高度 */
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    width: 100%;
+    max-width: var(--sidebar-width);
+    flex-shrink: 0;
+    position: sticky;  /* 固定侧边栏 */
+    top: calc(var(--header-height) + var(--spacing-base));
+    height: calc(100vh - var(--header-height) - var(--spacing-base) * 2);
+    overflow-y: auto;
+    scrollbar-gutter: stable;  /* 预留滚动条空间 */
+}
+
+.sidebar h2 {
+    font-size: 14px;
+    color: #454545;
+    margin: 0 0 15px 10px; /* 左侧和底部间距 */
+}
+
+.tag-list {
+    font-size: 14px;
+    overflow-y: auto;           /* 允许单独滚动 */
+    padding-left: 10px;          /* 与标题左对齐 */
+    -ms-overflow-style: none;    /* 隐藏 IE/Edge 滚动条 */
+    scrollbar-width: none;       /* 隐藏 Firefox 滚动条 */
+}
+
+.tag-list::-webkit-scrollbar {
+    display: none;               /* 隐藏 Webkit 内核浏览器滚动条 */
+}
+
+/* 标签列表渲染标签前增加 "# " */
+.tag-list .tag::before {
+    content: "# " !important;
+    display: inline;
+}
+
+.tag-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    color: #888;  /* 修改为更浅的灰色 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: normal;
+}
+
+.tag-item:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.tag-item.active {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.tag-item .count {
+    margin-left: 8px;
+    font-size: 12px;
+    color: #999;
+}
+
+/* 子标签样式 */
+.tag-item.sub-tag {
+    padding-left: 16px;
+}
+
+/* 父标签与子标签样式 */
+.parent-tag {
+    font-weight: normal;
+}
+.child-tag {
+    padding-left: 20px;
+}
+
+/* toggle-arrow 样式 */
+.toggle-arrow {
+    margin-left: auto;
+    cursor: pointer;
+    user-select: none;
+    font-size: 8px;
+}
+
+/* 主内容区样式 */
+.main-content {
+    flex-grow: 1;
+    min-width: 0;      /* 防止内容溢出 */
+    max-width: var(--memo-width);
+    width: 100%;
+}
+
+/* 笔记样式 */
+.memo {
+    background: #fff;
+    padding: var(--spacing-base);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s ease;
+    margin: 20px 0;
+    word-wrap: break-word;
+    max-width: 620px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.memo:hover {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.memo .time {
+    color: #8d8d8d;
+    font-size: 12px;
+}
+
+.memo .content {
+    color: #323232;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.memo .content p {
+    line-height: 1.8;
+    min-height: 20px;
+    margin: 0;
+}
+
+.memo .content ul,
+.memo .content ol {
+    padding-inline-start: 22px;
+    margin: 10px 0;
+}
+
+.memo .content li {
+    line-height: 1.8;
+}
+
+.memo .files img {
+    max-width: 100%;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* URL 链接样式 */
+.memo .content a {
+    color: var(--link-color);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all var(--transition-speed) ease;
+}
+
+.memo .content a:hover {
+    border-bottom-color: var(--link-color);
+}
+
+/* 标签样式 */
+.memo .content .tag {
+    display: inline-block;
+    color: var(--primary-color);
+    text-decoration: none;
+    margin: 0 2px;
+    transition: all var(--transition-speed) ease;
+}
+
+.memo .content .tag:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* 分隔符样式 */
+.memo .content hr {
+    border: none;
+    border-top: 1px solid #efefef;
+    margin: 15px 0;
+}
+
+/* 加载状态 */
+.loading {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+}
+
+/* 错误状态 */
+.error {
+    color: #ff4444;
+    padding: 20px;
+    text-align: center;
+    background: white;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+/* 不同层级的缩进 */
+.tag-item.level-1 { padding-left: 10px; }
+.tag-item.level-2 { padding-left: 20px; }
+.tag-item.level-3 { padding-left: 30px; }
+
+/* 响应式布局优化 */
+@media (max-width: 768px) {
+    .layout {
+        flex-direction: column;  /* 小屏幕下改为垂直布局 */
+    }
+    
+    .sidebar {
+        position: static;
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .main-content {
+        max-width: 100%;
+    }
+    
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .user {
+        text-align: left;
+    }
+    
+    .actions-wrapper {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .action-button {
+        width: 100%;
+        justify-content: center;
+    }
+}

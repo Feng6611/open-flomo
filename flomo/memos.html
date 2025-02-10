@@ -1,0 +1,190 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>flomo · 浮墨笔记</title>
+        <style type="text/css">
+          * {
+            margin: 0;
+            padding: 0;
+          }
+          body {
+            background: #fafafa;
+          }
+
+          header .logo {
+            text-align: center;
+            border-bottom: 1px solid #efefef;
+          }
+
+          header .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          header .logo,
+          header .top .user {
+            padding: 40px 0;
+          }
+          header .top .user .name {
+            color: #454545;
+            font-size: 16px;
+          }
+          header .top .user .date {
+            font-size: 12px;
+            color: #9d9d9d;
+          }
+
+          header .top .filter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          header .top .filter button {
+            padding: 9px 10px;
+            background: #30cf79;
+            border-radius: 3px;
+            color: #fff;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+          }
+          header,
+          .memos {
+            width: 600px;
+            margin: 0 auto;
+          }
+          .memos h1 {
+            margin-top: 30px;
+          }
+          .memo {
+            margin: 20px 0;
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            word-wrap: break-word;
+          }
+          .memo:hover {
+            box-shadow: 0px 2px 10px #dddddd;
+          }
+          .memo .time {
+            color: #8d8d8d;
+            font-size: 12px;
+          }
+          .memo .content {
+            color: #323232;
+            font-size: 14px;
+          }
+          .memo .content p {
+            line-height: 1.8;
+            min-height: 20px;
+            margin: 0;
+          }
+          .memo .content ul,
+          .memo .content ol {
+            padding-inline-start: 22px;
+            margin: 0;
+          }
+          .memo .content li {
+            line-height: 1.8;
+          }
+          .memo .files img {
+            max-width: 100%;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+            margin: 6px 0;
+          }
+        </style>
+    </head>
+    <body>
+      <header>
+        <div class="logo">
+          <svg width="96" height="31" viewBox="0 0 96 31" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M4.87056 9.11086C4.87056 6.25522 5.89594 4.89539 7.81854 4.89539H12.5609V0H7.81854C2.69163 0 0 3.39957 0 9.11086V10.8786V14.9581V30.3242H4.87056V15.3661H12.5609V10.8786H4.87056V9.11086ZM79.5937 27.8765C81.3881 29.7803 83.6952 30.7321 86.3868 30.7321C89.0785 30.7321 91.2574 29.7803 93.18 27.8765C95.1026 25.9727 95.9998 23.525 95.9998 20.5334C95.9998 17.5418 94.9744 15.0941 93.18 13.1903C91.2574 11.2866 89.0785 10.3347 86.3868 10.3347C83.6952 10.3347 81.5163 11.2866 79.5937 13.1903C77.6711 15.0941 76.7739 17.5418 76.7739 20.5334C76.7739 23.525 77.7993 25.9727 79.5937 27.8765ZM81.6444 20.5334C81.6444 17.5418 83.6952 15.502 86.3868 15.502C89.0785 15.502 91.2574 17.5418 91.1292 20.5334C91.1292 23.661 89.0785 25.7008 86.3868 25.7008C83.6952 25.7008 81.6444 23.661 81.6444 20.5334ZM32.8147 30.7321C30.1231 30.7321 27.816 29.7802 26.0215 27.8765C24.2271 25.9727 23.2017 23.661 23.2017 20.6694C23.2017 17.6777 24.0989 15.23 26.0215 13.3263C27.9441 11.4225 30.1231 10.4706 32.8147 10.4706C35.5063 10.4706 37.6853 11.4225 39.6079 13.3263C41.5305 15.23 42.4277 17.6777 42.4277 20.6694C42.4277 23.661 41.5305 26.1087 39.6079 28.0124C37.6853 29.9162 35.5063 30.7321 32.8147 30.7321ZM32.8147 15.502C30.1231 15.502 28.0723 17.5418 28.0723 20.5334C28.0723 23.661 30.1231 25.7007 32.8147 25.7007C35.5063 25.7007 37.5571 23.661 37.5571 20.5334C37.5571 17.5418 35.5063 15.502 32.8147 15.502ZM62.0358 19.9894V30.4601H57.2934V19.7175C57.2934 17.1338 55.8835 15.502 53.9609 15.502C51.7819 15.502 50.1157 16.8618 50.1157 19.9894V30.4601H45.3733V10.8786H50.1157V13.7342C51.0129 11.5585 53.32 10.4706 55.3708 10.4706C58.3187 10.6066 60.2413 11.8305 61.2667 14.1422C62.5484 11.6945 64.471 10.4706 67.0345 10.4706C71.5205 10.4706 74.084 13.5982 74.084 19.3095V30.4601H69.3416V19.8535C69.3416 17.1338 67.9317 15.502 65.8809 15.502C63.5738 15.502 62.0358 17.1338 62.0358 19.9894ZM15.6366 4.89539V0H20.379V30.4602H15.6366V7.2071V4.89539Z" fill="#202020"/>
+          </svg>
+        </div>
+        <div class="top">
+          <div class="user">
+            <div class="name">@Chen</div>
+            <div class="date">于 2024-2-8 导出 5 条 MEMO</div>
+          </div>
+        </div>
+      </header>
+      <div class="memos">
+          
+        <div class="memo">
+            <div class="time">2024-02-08 10:00:00</div>
+            <div class="content">
+                <p>#Openflomo #动机</p>
+                <p>Open-flomo - 公开你的flomo，一个公开样式模板</p>
+                <ul>
+                    <li>作为INFP，我并不擅长公开表达。事实上，我的flomo没什么宝藏，没什么不可见的，女朋友看完了我也没有被她看我日记的那种羞耻。</li>
+                    <li>我不擅长使用 flomo，标签/分类/Workflow 都不会用。我的 flomo 仅仅是一个速记工具，很杂乱。如果我不把他公开，绝大多数信息永远都不会被看到；反而如果被看到，可能对人的了解有更多。</li>
+                    <li>而有人味的东西，是越来越少了。</li>
+                </ul>
+            </div>
+            <div class="files"></div>
+        </div>
+
+        <div class="memo">
+            <div class="time">2024-02-08 10:01:00</div>
+            <div class="content">
+              <p>#Openflomo/示例</p>  
+              <p>示例网站：https://openflomo.kkuk.dev</p>
+              <p>My Open flomo：https://flomo.kkuk.dev</p>
+            </div>
+            <div class="files"></div>
+        </div>
+
+        <div class="memo">
+            <div class="time">2024-02-08 10:02:00</div>
+            <div class="content">
+              <p>#Openflomo/use</p> 
+              <p>如何使用 Open-flomo：</p>
+                <ol>
+                    <li>导出你的flomo内容（根据官方信息，每7天只可以导出一次；如果你有不想公开的部分，可以在导出的时候提前筛选标签）</li>
+                    <li>Clone这个仓库</li>
+                    <li>将解压后的flomo文件夹，导入当前项目</li>
+                    <li>配置项更新：
+                        <ul>
+                            <li>`notesFileUrl: "flomo/memos.html"`：更新你实际的flomo文件路径</li>
+                            <li>`minDate: "2024-01-01"`：仅显示该时间之后的memos</li>
+                        </ul>
+                    </li>
+                    <li>创建并提交代码，开启 Github Page</li>
+                </ol>
+            </div>
+            <div class="files"></div>
+        </div>
+
+        <div class="memo">
+            <div class="time">2024-02-08 10:03:00</div>
+            <div class="content">
+                <p>项目结构：</p>
+                <pre>
+Open-flomo/
+├── assets/           # 静态资源文件夹
+│   └── images/      # 图片资源
+├── flomo/           # flomo导出文件
+├── index.html       # 主页面
+├── config.js        # 配置文件
+└── main.js          # 主要逻辑</pre>
+            </div>
+            <div class="files"></div>
+        </div>
+
+        <div class="memo">
+            <div class="time">2024-02-08 10:04:00</div>
+            <div class="content">
+              <p>#Openflomo #AboutMe</p>  
+              <p>联系方式：</p>
+                <ul>
+                    <li>微信：fchen6611</li>
+                    <li>邮箱：fchen6611@gmail.com</li>
+                </ul>
+            </div>
+            <div class="files"></div>
+        </div>
+
+      </div>
+    </body>
+</html>
