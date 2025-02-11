@@ -105,7 +105,7 @@
         <div class="top">
           <div class="user">
             <div class="name">@Chen</div>
-            <div class="date">于 2024-2-8 导出 5 条 MEMO</div>
+            <div class="date">于 2025-2-8 导出 6 条 MEMO</div>
           </div>
         </div>
       </header>
@@ -135,6 +135,20 @@
             <div class="files"></div>
         </div>
 
+         <div class="memo">
+            <div class="time">2024-02-08 10:00:00</div>
+            <div class="content">
+                <p>#Openflomo #亮点</p>
+                <p>项目特点</p>
+                <ul>
+                    <li>由 O3mini + Claude3.5 操刀，最原始的 Html+Css+Js文件</li>
+                    <li>如果你只想展示部分时间、部分标签，你可以选择不上传、或者在 `config.js`中进行配置</li>
+                    <li>通过 Github Page 部署站点，数据、域名都由你自己掌控</li>
+                </ul>
+            </div>
+            <div class="files"></div>
+        </div>
+        
         <div class="memo">
             <div class="time">2024-02-08 10:02:00</div>
             <div class="content">
@@ -161,13 +175,13 @@
             <div class="content">
                 <p>项目结构：</p>
                 <pre>
-Open-flomo/
-├── assets/           # 静态资源文件夹
-│   └── images/      # 图片资源
-├── flomo/           # flomo导出文件
-├── index.html       # 主页面
-├── config.js        # 配置文件
-└── main.js          # 主要逻辑</pre>
+        Open-flomo/
+        ├── assets/          # 静态资源文件夹
+        │   └── images/      # 图片资源
+        ├── flomo/           # flomo导出文件
+        ├── index.html       # 主页面
+        ├── config.js        # 配置文件
+        └── main.js          # 主要逻辑</pre>
             </div>
             <div class="files"></div>
         </div>
@@ -186,5 +200,26 @@ Open-flomo/
         </div>
 
       </div>
+      <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        // 注意：相对于 flomo 目录调整 JSON 文件路径（例如：../data/user.json）
+        fetch('../data/user.json')
+          .then(response => response.json())
+          .then(data => {
+            const userContainer = document.querySelector('.user');
+            if(userContainer) {
+              const nameElem = userContainer.querySelector('.name');
+              const dateElem = userContainer.querySelector('.date');
+              if(nameElem) {
+                nameElem.innerText = data.name;
+              }
+              if(dateElem) {
+                dateElem.innerText = `于 ${data.exportDate} 导出 ${data.memosCount} 条 MEMO`;
+              }
+            }
+          })
+          .catch(error => console.error('加载用户数据错误:', error));
+      });
+      </script>
     </body>
 </html>

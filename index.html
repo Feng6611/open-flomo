@@ -12,8 +12,8 @@
             <div class="header-top">
                 <div class="title">Open your flomo</div>
                 <div class="user">
-                    <div class="name">@Chen</div>
-                    <div class="date">于 2025-2-8 导出 1102 条 MEMO</div>
+                    <div class="name"></div>
+                    <div class="date"></div>
                 </div>
             </div>
             <div class="header-actions">
@@ -55,5 +55,36 @@
     </div>
     <script src="config.js"></script>
     <script src="main.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // 从 flomo/memos.html 获取用户数据信息
+      fetch('flomo/memos.html')
+        .then(response => response.text())
+        .then(htmlText => {
+          // 利用 DOMParser 将返回的 HTML 文本转换为 DOM 对象
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlText, 'text/html');
+          const userContainer = doc.querySelector('.user');
+          if (userContainer) {
+            const name = userContainer.querySelector('.name') ? userContainer.querySelector('.name').innerText : '';
+            const date = userContainer.querySelector('.date') ? userContainer.querySelector('.date').innerText : '';
+            // 更新当前页面中所有 .user 容器
+            document.querySelectorAll('.user').forEach(function(container) {
+              const nameElem = container.querySelector('.name');
+              const dateElem = container.querySelector('.date');
+              if (nameElem) {
+                nameElem.innerText = name;
+              }
+              if (dateElem) {
+                dateElem.innerText = date;
+              }
+            });
+          } else {
+            console.error('在 flomo/memos.html 中未找到 .user 元素');
+          }
+        })
+        .catch(error => console.error('加载 flomo/memos.html 错误:', error));
+    });
+    </script>
 </body>
 </html> 
