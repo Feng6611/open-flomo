@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open your flomo</title>
     <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 </head>
 <body>
     <header>
@@ -53,8 +56,12 @@
             </div>
         </main>
     </div>
-    <script src="config.js"></script>
-    <script src="main.js"></script>
+    <script src="config.js?v=" + new Date().getTime()></script>
+    <script>
+        // 添加动态版本号到其他资源
+        document.write('<link rel="stylesheet" href="styles.css?v=' + filterConfig.version + '">');
+        document.write('<script src="main.js?v=' + filterConfig.version + '"><\/script>');
+    </script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
       // 从配置文件获取笔记文件路径

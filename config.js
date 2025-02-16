@@ -24,5 +24,14 @@ var filterConfig = {
         description: "思想是可以被公开的 - 让知识和想法自由流动",
         keywords: "flomo,笔记,公开,想法,知识管理,笔记分享,个人知识库,思维导图,标签管理,数字花园,第二大脑,知识整理,学习笔记,灵感收集",
         canonicalUrl: "openflomo.kkuk.dev" // 请根据实际情况替换为正确域名
+    },
+    
+    // 添加版本控制
+    version: new Date().getTime(), // 使用时间戳作为版本号，确保每次部署都会更新
+    
+    // 缓存控制
+    cacheControl: {
+        enabled: true,  // 是否启用缓存控制
+        maxAge: 0      // 缓存时间（秒）
     }
 }; 
