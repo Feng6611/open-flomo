@@ -1,6 +1,6 @@
 ## Open-flomo
 
-Open-flomo，公开你的flomo，一个公开样式模板
+Open flomo，公开你的flomo，一个用于公开展示flomo内容的页面模板
 
 - 作为INFP，我并不擅长公开表达
 - 事实上，我的flomo没什么宝藏，没什么不可见的，女朋友看完了我也没有被她看我日记的那种羞耻
