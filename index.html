@@ -57,8 +57,8 @@
     <script src="main.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-      // 从 flomo/memos.html 获取用户数据信息
-      fetch('flomo/memos.html')
+      // 从配置文件获取笔记文件路径
+      fetch(filterConfig.notesFileUrl)
         .then(response => response.text())
         .then(htmlText => {
           // 利用 DOMParser 将返回的 HTML 文本转换为 DOM 对象
@@ -80,10 +80,10 @@
               }
             });
           } else {
-            console.error('在 flomo/memos.html 中未找到 .user 元素');
+            console.error('在 ' + filterConfig.notesFileUrl + ' 中未找到 .user 元素');
           }
         })
-        .catch(error => console.error('加载 flomo/memos.html 错误:', error));
+        .catch(error => console.error('加载 ' + filterConfig.notesFileUrl + ' 错误:', error));
     });
     </script>
 </body>
