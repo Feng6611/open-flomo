@@ -4,10 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open your flomo</title>
-    <link rel="stylesheet" href="styles.css">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    
+    <!-- 内联关键CSS -->
+    <style>
+        /* 关键渲染路径所需的最小CSS集合 */
+        :root {
+            --primary-color: #3ca370;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --spacing-base: 20px;
+            --header-height: 80px;
+            --max-content-width: 900px;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        /* 头部基础样式 */
+        header {
+            background: white;
+            border-bottom: 1px solid #efefef;
+        }
+        
+        .header-container {
+            max-width: var(--max-content-width);
+            margin: 0 auto;
+            padding: 0 var(--spacing-base);
+        }
+        
+        /* 加载状态样式 */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        
+        /* 基础布局样式 */
+        .layout {
+            display: flex;
+            max-width: var(--max-content-width);
+            margin: 0 auto;
+            padding: 0 var(--spacing-base);
+            gap: var(--spacing-base);
+        }
+    </style>
+    
+    <!-- 异步加载非关键CSS -->
+    <link rel="preload" href="styles.css?v=${filterConfig.version}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="styles.css?v=${filterConfig.version}">
+    </noscript>
+    
+    <!-- 预加载并加载配置文件 -->
+    <link rel="preload" href="config.js" as="script">
+    <script defer src="config.js"></script>
+    
+    <!-- 对非关键 JavaScript 使用 defer -->
+    <script defer src="main.js"></script>
+    
+    <!-- 在head中添加 -->
+    <link rel="preconnect" href="https://flomoapp.com">
+    <link rel="dns-prefetch" href="https://flomoapp.com">
 </head>
 <body>
     <header>
@@ -56,42 +118,5 @@
             </div>
         </main>
     </div>
-    <script src="config.js?v=" + new Date().getTime()></script>
-    <script>
-        // 添加动态版本号到其他资源
-        document.write('<link rel="stylesheet" href="styles.css?v=' + filterConfig.version + '">');
-        document.write('<script src="main.js?v=' + filterConfig.version + '"><\/script>');
-    </script>
-    <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // 从配置文件获取笔记文件路径
-      fetch(filterConfig.notesFileUrl)
-        .then(response => response.text())
-        .then(htmlText => {
-          // 利用 DOMParser 将返回的 HTML 文本转换为 DOM 对象
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(htmlText, 'text/html');
-          const userContainer = doc.querySelector('.user');
-          if (userContainer) {
-            const name = userContainer.querySelector('.name') ? userContainer.querySelector('.name').innerText : '';
-            const date = userContainer.querySelector('.date') ? userContainer.querySelector('.date').innerText : '';
-            // 更新当前页面中所有 .user 容器
-            document.querySelectorAll('.user').forEach(function(container) {
-              const nameElem = container.querySelector('.name');
-              const dateElem = container.querySelector('.date');
-              if (nameElem) {
-                nameElem.innerText = name;
-              }
-              if (dateElem) {
-                dateElem.innerText = date;
-              }
-            });
-          } else {
-            console.error('在 ' + filterConfig.notesFileUrl + ' 中未找到 .user 元素');
-          }
-        })
-        .catch(error => console.error('加载 ' + filterConfig.notesFileUrl + ' 错误:', error));
-    });
-    </script>
 </body>
 </html> 

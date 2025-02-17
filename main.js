@@ -3,47 +3,79 @@ let allMemos = [];
 let tagStats = new Map();
 let activeTag = null;
 
+// 新增：分页相关变量
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let filteredMemos = [];
+
+// 在文件顶部添加缓存相关变量
+let memoCache = {
+    data: null,
+    etag: null,
+    timestamp: null
+};
+
 // 修改后的 getMemoTags 函数：如果未找到 .tag 节点，则直接通过正则表达式提取文本中的标签
 function getMemoTags(memo) {
-    // 先尝试查找 memo 内的 .tag 节点
-    const tagSpans = memo.querySelectorAll('.tag');
+    // 如果已经解析过标签，直接返回
+    if (memo.dataset.tags) {
+        return JSON.parse(memo.dataset.tags);
+    }
+
     const tags = new Set();
+    // 先尝试查找 .tag 节点
+    const tagSpans = memo.querySelectorAll('.tag');
+    
     if (tagSpans.length > 0) {
         tagSpans.forEach(span => {
-            const rawTag = span.textContent.trim();
-            // 如果文本以 "#" 开头，则去除 "#" 取实际标签
-            if (rawTag.startsWith('#')) {
-                const tag = rawTag.substring(1).trim();
-                if (tag) {
-                    tags.add(tag);
-                    if (tag.includes('/')) {
-                        tags.add(tag.split('/')[0].trim());
-                    }
+            const tag = span.textContent.trim().replace(/^#/, '');
+            if (tag) {
+                tags.add(tag);
+                if (tag.includes('/')) {
+                    tags.add(tag.split('/')[0]);
                 }
             }
         });
+    } else {
+        // 如果没有 .tag 节点，使用正则匹配
+        const regex = /#([^\s#]+)/g;
+        let match;
+        const text = memo.textContent;
+        while ((match = regex.exec(text)) !== null) {
+            const tag = match[1].trim();
+            if (tag) {
+                tags.add(tag);
+                if (tag.includes('/')) {
+                    tags.add(tag.split('/')[0]);
+                }
+            }
+        }
     }
+    
     return Array.from(tags);
 }
 
 // 更新标签统计
-function updateTagStats(memos) {
+function updateTagStats(memoTags) {
     tagStats.clear();
-    memos.forEach(memo => {
-        // 使用 getMemoTags 仅从 memo 正文中提取标签
-        const tags = getMemoTags(memo);
-        tags.forEach(tag => {
-            tagStats.set(tag, (tagStats.get(tag) || 0) + 1);
-        });
+    // 使用 Map 来统计标签
+    memoTags.flat().forEach(tag => {
+        tagStats.set(tag, (tagStats.get(tag) || 0) + 1);
+        // 处理父标签（支持多级）
+        let currentTag = tag;
+        while (currentTag.includes('/')) {
+            currentTag = currentTag.split('/').slice(0, -1).join('/');
+            tagStats.set(currentTag, (tagStats.get(currentTag) || 0) + 1);
+        }
     });
 }
 
-// 修改 renderTagList 函数实现父子标签嵌套和展开/折叠
+// 修改 renderTagList 函数，实现正确获取标签列表容器
 function renderTagList() {
     // 构建三级标签层级结构，支持 level1、level2、level3（仅支持最多三级），默认全部折叠
     const hierarchy = {};
     tagStats.forEach((count, tag) => {
-        const parts = tag.split('/'); // 修改：直接分割，不含前导 "#"
+        const parts = tag.split('/'); // 直接分割，不含前导 "#"
         if (parts.length === 1) {
             if (!hierarchy[tag]) {
                 hierarchy[tag] = { tag: tag, count: count, children: [] };
@@ -51,7 +83,7 @@ function renderTagList() {
                 hierarchy[tag].count += count;
             }
         } else if (parts.length === 2) {
-            const parentTag = parts[0]; // 父标签为第一个部分
+            const parentTag = parts[0];
             if (!hierarchy[parentTag]) {
                 hierarchy[parentTag] = { tag: parentTag, count: 0, children: [] };
             }
@@ -83,10 +115,8 @@ function renderTagList() {
         if (level === 1) {
             displayTag = '# ' + node.tag; // 一级标签显示时加上 "# " 带一个空格
         } else if (level === 2) {
-            // 仅显示二级内容，例如 "Product/想法" 显示 "想法"
             displayTag = node.tag.replace(/^[^/]+\//, '');
         } else if (level === 3) {
-            // 显示三级标签的最后部分
             displayTag = node.tag.replace(/^[^/]+\/[^/]+\//, '');
         } else {
             displayTag = node.tag;
@@ -119,6 +149,8 @@ function renderTagList() {
     Object.values(hierarchy).forEach(parent => {
         html += generateHTMLForNode(parent, 1);
     });
+
+    // 修复：正确获取 tag-list 对象
     const tagList = document.getElementById('tag-list');
     tagList.innerHTML = html;
 
@@ -145,10 +177,10 @@ function renderTagList() {
         const tagItem = e.target.closest('.tag-item');
         if (tagItem && tagList.contains(tagItem)) {
             const tag = tagItem.dataset.tag;
-            activeTag = tag;
-            filterMemosByTag(tag);
+            activeTag = activeTag === tag ? null : tag; // 切换选中状态逻辑
+            filterMemosByTag(activeTag);
             tagList.querySelectorAll('.tag-item').forEach(t => {
-                t.classList.toggle('active', t.dataset.tag === tag);
+                t.classList.toggle('active', t.dataset.tag === activeTag);
             });
         }
     });
@@ -156,30 +188,19 @@ function renderTagList() {
 
 // 根据标签筛选笔记
 function filterMemosByTag(tag) {
-    const content = document.getElementById('content');
     if (!tag) {
-        // 显示所有笔记
-        content.innerHTML = `<div class="memos">${allMemos.map(memo => memo.outerHTML).join('')}</div>`;
+        filteredMemos = allMemos.map(memo => memo.html);
     } else {
-        let filteredMemos;
-        if (filterConfig && filterConfig.tagFilterMode === "exclude") {
-            // 反选：排除包含该 tag 的 memo
-            filteredMemos = allMemos.filter(memo => {
-                const memoTags = getMemoTags(memo);
-                return !memoTags.includes(tag);
-            });
-        } else {
-            // 正选：仅包含该 tag 的 memo
-            filteredMemos = allMemos.filter(memo => {
-                const memoTags = getMemoTags(memo);
-                return memoTags.includes(tag);
-            });
-        }
-        content.innerHTML = `<div class="memos">${filteredMemos.map(memo => memo.outerHTML).join('')}</div>`;
+        filteredMemos = allMemos
+            .filter(memo => {
+                return filterConfig.tagFilterMode === "exclude" 
+                    ? !memo.tags.includes(tag)
+                    : memo.tags.includes(tag);
+            })
+            .map(memo => memo.html);
     }
-    processContent();
-    // 新增：每次筛选后重置内容区域滚动位置
-    content.scrollTop = 0;
+    renderPageOptimized(1, true);
+    document.getElementById('content').scrollTop = 0;
 }
 
 // 修改后的 processContent 函数：采用递归逐个替换文本节点中的 "#xxx" 为可点击的 <span class="tag"> 标签，
@@ -328,98 +349,121 @@ function updateSEOMetadata() {
     }
 }
 
-// 加载内容
-function loadContent() {
+// 新增：分页渲染函数
+function renderPageOptimized(page, initialLoad = false) {
+    currentPage = page;
+    const startIndex = (page - 1) * PAGE_SIZE;
+    const endIndex = page * PAGE_SIZE;
+    
+    const memosToDisplay = filteredMemos.slice(startIndex, endIndex);
+    const contentEl = document.getElementById('content');
+    
+    if (initialLoad) {
+        // 一次性插入HTML
+        contentEl.innerHTML = `<div class="memos">${memosToDisplay.join('')}</div>`;
+    } else {
+        // 追加新内容
+        const memosContainer = contentEl.querySelector('.memos');
+        memosContainer.insertAdjacentHTML('beforeend', memosToDisplay.join(''));
+    }
+    
+    // 使用 requestIdleCallback 在空闲时处理内容
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+            processContent();
+        }, { timeout: 1000 }); // 设置1秒超时，确保最终会执行
+    } else {
+        // 降级处理
+        requestAnimationFrame(() => {
+            processContent();
+        });
+    }
+}
+
+// 新增：滚动事件处理，滚动到底部时加载下一页
+function handleScroll() {
+    const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
+    if (scrollTop + clientHeight >= scrollHeight - 100) {
+        if (currentPage * PAGE_SIZE < filteredMemos.length) {
+            renderPageOptimized(currentPage + 1);
+        }
+    }
+}
+
+// 修改 loadContent 函数，添加缓存验证逻辑
+function loadContent(forceRefresh = false) {
     const refreshBtn = document.getElementById('refresh-btn');
     refreshBtn.classList.add('loading');
     
-    // 清空现有内容
+    // 清空现有内容显示加载状态
     document.getElementById('content').innerHTML = '<div class="loading">加载中...</div>';
     document.getElementById('tag-list').innerHTML = '<div class="loading">加载中...</div>';
     
-    // 添加时间戳参数以避免缓存
-    const timestamp = new Date().getTime();
-    // 修改：通过配置文件管理笔记文件地址
-    fetch(`${filterConfig.notesFileUrl}?t=${timestamp}`)
+    // 准备请求头
+    const headers = new Headers();
+    if (!forceRefresh && memoCache.etag) {
+        headers.append('If-None-Match', memoCache.etag);
+    }
+    
+    // 构建请求URL，使用配置版本号而不是时间戳
+    const url = `${filterConfig.notesFileUrl}?v=${filterConfig.version}`;
+    
+    fetch(url, { headers })
         .then(response => {
+            // 保存新的 ETag
+            const newEtag = response.headers.get('ETag');
+            if (newEtag) {
+                memoCache.etag = newEtag;
+            }
+            
+            // 如果返回 304，使用缓存数据
+            if (response.status === 304 && memoCache.data) {
+                console.log('使用缓存数据');
+                return Promise.resolve(memoCache.data);
+            }
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+            
             return response.text();
         })
         .then(html => {
+            // 如果是新数据，更新缓存
+            if (typeof html === 'string') {
+                memoCache.data = html;
+                memoCache.timestamp = Date.now();
+            }
+            
             const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
+            const doc = parser.parseFromString(
+                typeof html === 'string' ? html : memoCache.data, 
+                'text/html'
+            );
             
-            // 获取所有笔记
-            const memosContainer = doc.querySelector('.memos');
-            if (!memosContainer) {
-                throw new Error('未找到笔记内容');
-            }
-
-            allMemos = Array.from(memosContainer.querySelectorAll('.memo'));
-            
-            // 修复图片路径
-            allMemos.forEach(memo => {
-                const images = memo.querySelectorAll('img');
-                images.forEach(img => {
-                    const src = img.getAttribute('src');
-                    if (src && src.startsWith('file/')) {
-                        img.src = 'flomo/' + src;
-                    }
-                });
-            });
-
-            // 依据筛选配置文件中的 minDate 筛选 memo（仅保留创建日期大于等于 minDate 的 memo）
-            if (filterConfig && filterConfig.minDate) {
-                const minDate = new Date(filterConfig.minDate);
-                allMemos = allMemos.filter(memo => {
-                    const timeElem = memo.querySelector('.time');
-                    if (!timeElem) return true;
-                    // 假设 memo 的 .time 文本中包含日期格式 "YYYY-MM-DD"
-                    const dateMatch = timeElem.textContent.trim().match(/\d{4}-\d{1,2}-\d{1,2}/);
-                    if (dateMatch) {
-                        const memoDate = new Date(dateMatch[0]);
-                        return memoDate >= minDate;
-                    }
-                    return true;
-                });
-            }
-
-            // 基于配置文件进行标签预过滤（标签正选/反选），类似日期筛选
-            if (filterConfig && filterConfig.defaultTagFilter) {
-                if (filterConfig.tagFilterMode === "exclude") {
-                    // 反选：排除包含该标签的 memo
-                    allMemos = allMemos.filter(memo => {
-                        const memoTags = getMemoTags(memo);
-                        return !memoTags.includes(filterConfig.defaultTagFilter);
-                    });
-                } else {
-                    // 正选：仅保留包含该标签的 memo
-                    allMemos = allMemos.filter(memo => {
-                        const memoTags = getMemoTags(memo);
-                        return memoTags.includes(filterConfig.defaultTagFilter);
-                    });
-                }
-            }
-
-            // 将笔记内容显示到页面
-            document.getElementById('content').innerHTML = `<div class="memos">${allMemos.map(memo => memo.outerHTML).join('')}</div>`;
-
-            // 调用 processContent 转换笔记内容，将纯文本中的标签转换为 <span class="tag"> 标签
-            processContent();
-
-            // 重新获取处理后的 memo 节点（现在包含 .tag 元素）
-            allMemos = Array.from(document.getElementById('content').querySelectorAll('.memo'));
-
-            // 更新标签统计和渲染标签列表
-            updateTagStats(allMemos);
-            renderTagList();
-            
+            processHtmlDocument(doc);
             refreshBtn.classList.remove('loading');
         })
         .catch(error => {
             console.error('加载失败:', error);
+            // 如果有缓存数据，在加载失败时使用缓存
+            if (memoCache.data && !forceRefresh) {
+                console.log('加载失败，使用缓存数据');
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(memoCache.data, 'text/html');
+                processHtmlDocument(doc);
+                refreshBtn.classList.remove('loading');
+                
+                // 显示使用缓存的提示
+                const notification = document.createElement('div');
+                notification.className = 'cache-notification';
+                notification.innerHTML = '当前显示的是缓存数据';
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+                return;
+            }
+            
+            // 完全没有数据时显示错误
             document.getElementById('content').innerHTML = `
                 <div style="color: #ff4444; padding: 20px; text-align: center;">
                     加载失败，请刷新页面重试<br>
@@ -435,12 +479,91 @@ function loadContent() {
         });
 }
 
-// 刷新功能
-function refreshContent() {
-    loadContent();
+// 新增：处理 HTML 文档的函数
+function processHtmlDocument(doc) {
+    const memosContainer = doc.querySelector('.memos');
+    if (!memosContainer) {
+        throw new Error('未找到笔记内容');
+    }
+
+    // 使用字符串模板存储HTML，避免频繁的DOM操作
+    let memosHTML = '';
+    
+    // 一次遍历处理所有数据，避免多次循环
+    allMemos = Array.from(memosContainer.querySelectorAll('.memo'))
+        .map(memo => {
+            // 1. 提取所有需要的数据
+            const timeElem = memo.querySelector('.time');
+            const memoDate = timeElem ? new Date(timeElem.textContent.trim().match(/\d{4}-\d{1,2}-\d{1,2}/)?.[0] || 0) : null;
+            const tags = getMemoTags(memo);
+            const content = memo.querySelector('.content').innerHTML;
+            
+            // 2. 处理图片路径
+            const processedContent = content.replace(/src="file\//g, 'src="flomo/file/');
+            
+            // 3. 构建优化后的HTML字符串
+            const memoHTML = `
+                <div class="memo" data-date="${memoDate ? memoDate.getTime() : '0'}" data-tags='${JSON.stringify(tags)}'>
+                    <div class="time">${timeElem ? timeElem.textContent : ''}</div>
+                    <div class="content">${processedContent}</div>
+                    <div class="files">${memo.querySelector('.files')?.innerHTML || ''}</div>
+                </div>
+            `;
+            
+            // 4. 累加到总HTML字符串
+            memosHTML += memoHTML;
+            
+            return {
+                html: memoHTML,
+                date: memoDate,
+                tags: tags
+            };
+        })
+        // 5. 日期筛选
+        .filter(({date}) => {
+            if (!filterConfig.minDate) return true;
+            const minDate = new Date(filterConfig.minDate);
+            return !date || date >= minDate;
+        })
+        // 6. 标签预过滤
+        .filter(({tags}) => {
+            if (!filterConfig.defaultTagFilter) return true;
+            const hasTag = tags.includes(filterConfig.defaultTagFilter);
+            return filterConfig.tagFilterMode === "exclude" ? !hasTag : hasTag;
+        });
+
+    // 7. 更新标签统计
+    updateTagStats(allMemos.map(memo => memo.tags));
+    
+    // 8. 渲染标签列表
+    renderTagList();
+
+    // 9. 初始化分页显示，使用HTML字符串而不是DOM元素
+    filteredMemos = allMemos.map(memo => memo.html);
+    renderPageOptimized(1, true);
+
+    // 新增：更新用户信息逻辑
+    const userContainer = doc.querySelector('.user');
+    if (userContainer) {
+        const nameElem = userContainer.querySelector('.name');
+        const dateElem = userContainer.querySelector('.date');
+        const name = nameElem ? nameElem.innerText : "";
+        const date = dateElem ? dateElem.innerText : "";
+        document.querySelectorAll('.user').forEach(container => {
+            const targetName = container.querySelector('.name');
+            const targetDate = container.querySelector('.date');
+            if (targetName) targetName.innerText = name;
+            if (targetDate) targetDate.innerText = date;
+        });
+    }
 }
 
-// 初始化页面
+// 修改刷新功能，添加强制刷新参数
+function refreshContent() {
+    loadContent(true); // 强制刷新，忽略缓存
+}
+
+// 修改初始化函数，添加自动刷新逻辑
 function init() {
     // 新增：调用SEO优化函数，根据配置文件更新页面的SEO相关meta信息
     updateSEOMetadata();
@@ -466,6 +589,28 @@ function init() {
         }
     });
 
+    // 新增：监听页面滚动，实现分页加载
+    window.addEventListener('scroll', handleScroll);
+
+    // 添加定期检查更新逻辑
+    setInterval(() => {
+        // 如果页面不可见或距离上次更新不足5分钟，跳过更新
+        if (document.hidden || 
+            (memoCache.timestamp && Date.now() - memoCache.timestamp < 5 * 60 * 1000)) {
+            return;
+        }
+        loadContent();
+    }, 5 * 60 * 1000); // 每5分钟检查一次更新
+    
+    // 页面可见性变化时检查更新
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && 
+            memoCache.timestamp && 
+            Date.now() - memoCache.timestamp > 5 * 60 * 1000) {
+            loadContent();
+        }
+    });
+    
     // 首次加载内容
     loadContent();
 }
