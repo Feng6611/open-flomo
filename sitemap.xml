@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://openflomo.kkuk.dev/</loc>
+    <lastmod>2025-04-25</lastmod> <!-- 建议替换为实际的最后修改日期 -->
+    <changefreq>weekly</changefreq> <!-- 或根据你的更新频率调整 daily/monthly/yearly -->
+    <priority>1.0</priority> <!-- 主页通常优先级最高 -->
+  </url>
+</urlset> 

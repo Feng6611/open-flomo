@@ -1,0 +1,16 @@
+{
+  "name": "open-flomo",
+  "version": "1.0.0",
+  "description": "Open flomo，公开你的flomo，一个用于公开展示flomo内容的页面模板",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cssnano-cli": "^1.0.5",
+    "terser": "^5.39.0"
+  }
+}
